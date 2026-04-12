@@ -2,6 +2,13 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+
+//***************************Authentication************************************ */
+function requireLogin(req, res, next) {
+    if (!req.session.userId) return res.redirect('/login');
+    next();
+}
+
 //****************************GET()*********************************** */
 router.get('/', (req, res) => {
     res.render('index');
@@ -11,12 +18,17 @@ router.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-router.get('/register', (req, res) => {
+router.get('/register',(req, res) => {
     res.render('register', { error: null });
 });
 
-router.get('/dashboard', (req, res) => {
-    res.render('dashboard');
+router.get('/dashboard', requireLogin, (req, res) => {
+    res.render('dashboard', { username: req.session.username });
+    
+});
+
+router.get('/logout', (req, res) => {
+    req.session.destroy(() => res.redirect('/login'));
 });
 //****************************register post*********************************** */
 router.post('/register', async (req, res) => {
@@ -60,6 +72,10 @@ router.post('/login', async (req, res) => {
         if (!match) {
             return res.render('login', { error: 'Invalid username or password.' });
         }
+
+        req.session.userId = user.id;
+        req.session.username = user.username;
+
 
         // 3. success → redirect to dashboard
         res.redirect('/dashboard');

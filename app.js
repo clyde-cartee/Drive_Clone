@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const session = require('express-session');
 const port = 8000;
 
 const indexRouter = require('./routes/index');
@@ -10,6 +11,13 @@ const users = require('./models/user');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({
+    secret: 'drive-clone-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+}));
 
 app.set('views', path.join(__dirname, "views"));
 app.set('view engine', 'pug');
