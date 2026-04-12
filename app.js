@@ -4,11 +4,12 @@ const path = require('path');
 const port = 8000;
 
 const indexRouter = require('./routes/index');
-
 const sequelize = require('./utils/sequelize');
-const userFile = require('./models/userFile');
+const User = require('./models/user');
 
-app.use('/',express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('views', path.join(__dirname, "views"));
 app.set('view engine', 'pug');
@@ -16,10 +17,15 @@ app.set('view engine', 'pug');
 app.use('/', indexRouter );
 
 sequelize.authenticate()
-    .then(()=>{
-        console.log("Successful authenticated.");
-        app.listen(port);
+    .then(() => {
+        console.log("Successfully authenticated.");
+        return sequelize.sync();            // creates both tables if they don't exist
+    })
+    .then(() => {
+        app.listen(port, () => {
+            console.log(`Server running on http://localhost:${port}`);
+        });
     })
     .catch((err) => {
-        console.log("could not authenticate: ", err);
+        console.log("Could not authenticate: ", err);
     });

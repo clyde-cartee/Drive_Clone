@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1 Register
+  form(action='/register', method='POST')
+    input(type='text', name='username', placeholder='Username', required)
+    input(type='password', name='password', placeholder='Password', required)
+    button(type='submit') Register
+  p
+    a(href='/login') Already have an account? Log In
