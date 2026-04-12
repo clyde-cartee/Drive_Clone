@@ -1,0 +1,28 @@
+{
+  "name": "drive_clone",
+  "version": "1.0.0",
+  "description": "Drive_clone",
+  "homepage": "https://github.com/clyde-cartee/Drive_Clone#readme",
+  "bugs": {
+    "url": "https://github.com/clyde-cartee/Drive_Clone/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clyde-cartee/Drive_Clone.git"
+  },
+  "license": "ISC",
+  "author": "Clyde Cartee",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.22.0",
+    "nodemon": "^3.1.14",
+    "pug": "^3.0.4",
+    "sequelize": "^6.37.8"
+  }
+}
