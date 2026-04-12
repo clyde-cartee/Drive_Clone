@@ -5,7 +5,7 @@ const port = 8000;
 
 const indexRouter = require('./routes/index');
 const sequelize = require('./utils/sequelize');
-const User = require('./models/user');
+const users = require('./models/user');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,7 +19,7 @@ app.use('/', indexRouter );
 sequelize.authenticate()
     .then(() => {
         console.log("Successfully authenticated.");
-        return sequelize.sync();            // creates both tables if they don't exist
+        return sequelize.sync();            
     })
     .then(() => {
         app.listen(port, () => {

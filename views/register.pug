@@ -2,6 +2,8 @@ extends layout
 
 block content
   h1 Register
+  if error
+    p.error= error
   form(action='/register', method='POST')
     input(type='text', name='username', placeholder='Username', required)
     input(type='password', name='password', placeholder='Password', required)
