@@ -7,8 +7,9 @@ const port = 8000;
 
 const indexRouter = require('./routes/index');
 const sequelize = require('./utils/sequelize');
-const users = require('./models/user');
+const User = require('./models/user');
 const UserFile = require('./models/userFile');
+const Folder = require('./models/folder');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

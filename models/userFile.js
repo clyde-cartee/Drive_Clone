@@ -11,6 +11,11 @@ const UserFile = sequelize.define('UserFile', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+        folderId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,    // null means file sits in root
+        defaultValue: null
+    },
     originalName: {
         type: DataTypes.STRING,
         allowNull: false

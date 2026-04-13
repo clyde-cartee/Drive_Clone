@@ -114,3 +114,69 @@ header {
     margin-bottom: 16px;
     color: #444;
 }
+/* ── Breadcrumb ──────────────────────────────── */
+.breadcrumb {
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.breadcrumb a { color: #1a73e8; text-decoration: none; }
+
+/* ── Folder creation ─────────────────────────── */
+.folder-section {
+    background: white;
+    padding: 16px 24px;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+}
+
+.folder-section form {
+    flex-direction: row;
+    gap: 12px;
+}
+
+.folder-section input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.folder-section button {
+    padding: 10px 16px;
+    background: #34a853;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.folder-section button:hover { background: #2d8f46; }
+
+/* ── Folders grid ────────────────────────────── */
+.folders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.folder-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: #333;
+    gap: 8px;
+    transition: box-shadow 0.2s;
+}
+
+.folder-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+.folder-icon { font-size: 2.5rem; }

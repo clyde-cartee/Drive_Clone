@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const User = require('../models/user');
 const UserFile = require('../models/userFile');
+const Folder = require('../models/folder');
 
 
 //***************************Authentication************************************ */
@@ -13,7 +14,7 @@ function requireLogin(req, res, next) {
     next();
 }
 
-//****************************GET()*********************************** */
+//****************************{/,login,register,logout}GET()*********************************** */
 router.get('/', (req, res) => {
     res.render('index');
 });
@@ -26,21 +27,43 @@ router.get('/register',(req, res) => {
     res.render('register', { error: null });
 });
 
-router.get('/dashboard', requireLogin, async (req, res) => {
-    const files = await UserFile.findAll({
-        where: { userId: req.session.userId },
-        order: [['createdAt', 'DESC']]
-    });
-
-    res.render('dashboard', {
-        username: req.session.username,
-        files
-    });
-});
-
 router.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/login'));
 });
+//****************************/DashboardGET()*********************************** */
+router.get('/dashboard', requireLogin, async (req, res) => {
+    const folderId = req.query.folder ? parseInt(req.query.folder) : null;
+
+    const folders = await Folder.findAll({
+        where: { userId: req.session.userId },
+        order: [['name', 'ASC']]
+    });
+
+    const fileQuery = {
+        userId: req.session.userId,
+        folderId: folderId  // null shows root files, id shows folder files
+    };
+
+    const files = await UserFile.findAll({
+        where: fileQuery,
+        order: [['createdAt', 'DESC']]
+    });
+
+    // find current folder name if inside one
+    const currentFolder = folderId
+        ? folders.find(f => f.id === folderId)
+        : null;
+
+    res.render('dashboard', {
+        username: req.session.username,
+        files,
+        folders,
+        currentFolder,
+        folderId
+    });
+});
+
+
 //****************************register post*********************************** */
 router.post('/register', async (req, res) => {
     const { username, password } = req.body;
@@ -99,20 +122,21 @@ router.post('/login', async (req, res) => {
 //****************************Upload post*********************************** */
 router.post('/upload', requireLogin, (req, res) => {
     const upload = req.app.locals.upload;
+    const folderId = req.query.folder || null;
 
     upload.single('file')(req, res, async (err) => {
         if (err || !req.file) return res.redirect('/dashboard');
 
         await UserFile.create({
             userId:       req.session.userId,
+            folderId:     folderId,
             originalName: req.file.originalname,
             storedName:   req.file.filename,
             mimetype:     req.file.mimetype,
             size:         req.file.size
         });
 
-        console.log('File uploaded:', req.file);
-        res.redirect('/dashboard');
+        res.redirect('/dashboard' + (folderId ? `?folder=${folderId}` : ''));
     });
 });
 
@@ -183,6 +207,23 @@ router.post('/delete/:id', requireLogin, async (req, res) => {
         console.error(err);
         res.status(500).send('Something went wrong.');
     }
+});
+
+//****************************POST /folder/create***************************** */
+router.post('/folder/create', requireLogin, async (req, res) => {
+    const { name } = req.body;
+    const redirectFolder = req.query.folder || '';
+
+    try {
+        await Folder.create({
+            userId: req.session.userId,
+            name: name.trim()
+        });
+    } catch (err) {
+        console.error(err);
+    }
+
+    res.redirect('/dashboard' + (redirectFolder ? `?folder=${redirectFolder}` : ''));
 });
 
 module.exports = router;

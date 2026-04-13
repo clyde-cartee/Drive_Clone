@@ -8,17 +8,35 @@ block content
         span Welcome, #{username} 
         a(href='/logout') Log Out
 
+    .breadcrumb
+      a(href='/dashboard') Home
+      if currentFolder
+        span  › 
+        span= currentFolder.name
+
+    .folder-section
+      form(action='/folder/create' + (folderId ? '?folder=' + folderId : ''), method='POST')
+        input(type='text', name='name', placeholder='New folder name', required)
+        button(type='submit') + New Folder
+
+    if !currentFolder && folders.length > 0
+      .folders-grid
+        each folder in folders
+          a.folder-card(href='/dashboard?folder=' + folder.id)
+            span.folder-icon 📁
+            span= folder.name
+
     .upload-section
       h2 Upload a File
-      form(action='/upload', method='POST', enctype='multipart/form-data')
+      form(action='/upload' + (folderId ? '?folder=' + folderId : ''), method='POST', enctype='multipart/form-data')
         input(type='file', name='file', id='fileInput', required)
         label(for='fileInput') Choose a file
         button(type='submit') Upload
-
+    //- Files table
     .files-section
-      h2 Your Files
+      h2= currentFolder ? currentFolder.name + ' Files' : 'Your Files'
       if files.length === 0
-        p No files uploaded yet.
+        p No files here yet.
       else
         table
           thead
