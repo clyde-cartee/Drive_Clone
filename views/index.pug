@@ -1,8 +1,12 @@
 extends layout
 
 block content
-  h1 Welcome to Drive Clone
-  p
-    a(href='/login') Log In
-  p
-    a(href='/register') Register
+  .welcome-shell
+    .welcome-card
+      .welcome-logo
+        span.logo-icon ⬡
+        span.logo-text DriveClone
+      p.welcome-sub Your personal file storage
+      .welcome-links
+        a.btn-primary(href='/login') Log In
+        a.btn-secondary(href='/register') Register

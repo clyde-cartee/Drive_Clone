@@ -1,12 +1,14 @@
 extends layout
 
 block content
-  h1 Log In
-  if error
-    p.error= error
-  form(action='/login', method='POST')
-    input(type='text', name='username', placeholder='Username', required)
-    input(type='password', name='password', placeholder='Password', required)
-    button(type='submit') Log In
-  p
-    a(href='/register') Don't have an account? Register
+  .auth-container
+    h1 DriveClone
+    h2 Welcome back
+    if error
+      .error= error
+    form(action='/login', method='POST')
+      input(type='text', name='username', placeholder='Username', required)
+      input(type='password', name='password', placeholder='Password', required)
+      button(type='submit') Log In
+    p Don't have an account?
+      a(href='/register')  Register

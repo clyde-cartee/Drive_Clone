@@ -1,65 +1,100 @@
 extends layout
 
 block content
-  .dashboard
-    header
-      h1 📁 Drive Clone
-      nav
-        span Welcome, #{username} 
-        a(href='/logout') Log Out
+  .shell
+    //- Sidebar
+    aside.sidebar
+      .logo
+        span.logo-icon ⬡
+        span.logo-text DriveClone
+      nav.sidebar-nav
+        a.nav-item(href='/dashboard', class=!currentFolder ? 'active' : '')
+          span.nav-icon 🏠
+          span Home
+        .nav-divider My Folders
+        if folders.length > 0
+          each folder in folders
+            .nav-folder-item(class=currentFolder && currentFolder.id === folder.id ? 'active' : '')
+              a(href='/dashboard?folder=' + folder.id)
+                span.nav-icon 📁
+                span= folder.name
+              form(action='/folder/delete/' + folder.id, method='POST', onsubmit='return confirm("Delete folder?")')
+                button.nav-delete(type='submit', title='Delete folder') ×
+        else
+          p.nav-empty No folders yet
+      .sidebar-user
+        span.user-icon 👤
+        span= username
+        a(href='/logout') Log out
 
-    .breadcrumb
-      a(href='/dashboard') Home
-      if currentFolder
-        span  › 
-        span= currentFolder.name
+    //- Main content
+    main.main
+      //- Topbar
+      .topbar
+        .breadcrumb
+          a(href='/dashboard') Home
+          if currentFolder
+            span.crumb-sep ›
+            span.crumb-current= currentFolder.name
 
-    .folder-section
-      form(action='/folder/create' + (folderId ? '?folder=' + folderId : ''), method='POST')
-        input(type='text', name='name', placeholder='New folder name', required)
-        button(type='submit') + New Folder
+        //- New folder form
+        form.inline-form(action='/folder/create' + (folderId ? '?folder=' + folderId : ''), method='POST')
+          input(type='text', name='name', placeholder='New folder…')
+          button(type='submit') + Folder
 
-    if !currentFolder && folders.length > 0
-      .folders-grid
-        each folder in folders
-          a.folder-card(href='/dashboard?folder=' + folder.id)
-            span.folder-icon 📁
-            span= folder.name
+      //- Upload
+      .upload-card
+        form(action='/upload' + (folderId ? '?folder=' + folderId : ''), method='POST', enctype='multipart/form-data')
+          label.upload-zone(for='fileInput')
+            span.upload-icon ↑
+            span.upload-text Drop a file or click to upload
+            input(type='file', name='file', id='fileInput', required)
+          .upload-preview(style='display:none')
+            img.preview-img(src='', alt='preview', style='display:none')
+            span.preview-name
+          button.upload-btn(type='submit') Upload
 
-    .upload-section
-      h2 Upload a File
-      form(action='/upload' + (folderId ? '?folder=' + folderId : ''), method='POST', enctype='multipart/form-data')
-        input(type='file', name='file', id='fileInput', required)
-        label(for='fileInput') Choose a file
-        button(type='submit') Upload
-    //- Files table
-    .files-section
-      h2= currentFolder ? currentFolder.name + ' Files' : 'Your Files'
+      //- Folder grid (root only)
+      if !currentFolder && folders.length > 0
+        .section-label Folders
+        .folders-grid
+          each folder in folders
+            .folder-tile
+              a(href='/dashboard?folder=' + folder.id)
+                span.tile-icon 📁
+                span.tile-name= folder.name
+              form(action='/folder/delete/' + folder.id, method='POST', onsubmit='return confirm("Delete folder?")')
+                button.tile-delete(type='submit') ×
+
+      //- Files
+      .section-label= currentFolder ? currentFolder.name : 'All Files'
       if files.length === 0
-        p No files here yet.
+        .empty-state
+          span.empty-icon 📭
+          p No files here yet
       else
-        table
-          thead
-            tr
-              th Name
-              th Type
-              th Size
-              th Uploaded
-              th View
-              th Download
-              th Delete
-          tbody
-            each file in files
-              tr
-                td
-                  a(href='/file/' + file.id, target='_blank')= file.originalName
-                td= file.mimetype
-                td= (file.size / 1024).toFixed(1) + ' KB'
-                td= new Date(file.createdAt).toLocaleDateString()
-                td
-                  a(href='/file/' + file.id, target='_blank') 👁 View
-                td
-                  a(href='/download/' + file.id) ⬇ Download
-                td
-                  form(action='/delete/' + file.id, method='POST', onsubmit='return confirm("Delete this file?")')
-                    button.delete-btn(type='submit') 🗑 Delete
+        .files-table
+          .files-header
+            span Name
+            span Type
+            span Size
+            span Date
+            span Actions
+          each file in files
+            .files-row
+              span.file-name
+                a(href='/file/' + file.id, target='_blank')= file.originalName
+              span.file-type= file.mimetype.split('/')[1]
+              span= (file.size / 1024).toFixed(1) + ' KB'
+              span= new Date(file.createdAt).toLocaleDateString()
+              .file-actions
+                a.btn-view(href='/file/' + file.id, target='_blank') View
+                a.btn-dl(href='/download/' + file.id) ↓
+                form.move-form(action='/file/move/' + file.id + (folderId ? '?folder=' + folderId : ''), method='POST')
+                  select(name='folderId')
+                    option(value='null') — Root —
+                    each folder in folders
+                      option(value=folder.id, selected=file.folderId === folder.id)= folder.name
+                  button(type='submit') Move
+                form(action='/delete/' + file.id, method='POST', onsubmit='return confirm("Delete?")')
+                  button.btn-del(type='submit') ✕

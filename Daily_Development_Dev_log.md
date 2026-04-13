@@ -35,3 +35,12 @@ by adding file:ids and other authentication measures to keep users from having a
 when wanting to branch out into knew tools was knowing what I wanted to do, just not quite how to do it in that language yet. These tools have decreased that friction. I am putting measures in place
 to keep myself learning through this process. These being typing any code I get from language models, asking the model to explain things I do not understand, ect. I feel like if used properly,
 these langauge models can be a learning tool. The issue is learning to learn and push through the frustration phase instead of leaning on easy answers. 
+
+## 4/12/2026 pt. 4
+I have all basic functionality of my google drive clone within a day...I have some things I will clean up like if you click on the screen it causes a cursor to appear on closest text item. Other than 
+that it seems awsome. I believe this is a issue caused by allowing the ai to go wild with design but i am not mad in the slightest. I think that will be an easy fix. My next steps are to add a search 
+bar so you can choose to find a file or a folder. Filters for file type. Look at making the index or "welcome page" have more functionality like instructions, new features menu, contact us info ect.
+Overall, How quickly this entire thing came together is incredible. The use of "vibe coding" allowed me to learn syntax as I went and wanted to add new features. I think an important part of my
+success with this strategy is again me having how I wanted my file system to be set up, telling the ai exactly what tools I wanted to use, and not asking it to do everything all at once. I knew what
+it was doing at all times and it was easy to double check as I made it only do small chunks of work. Very fun. As you can see I spent my entire sunday working on this project off and on because I was
+so excited. The time literally flew by. 

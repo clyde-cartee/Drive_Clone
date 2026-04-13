@@ -1,182 +1,637 @@
-/* ── General ─────────────────────────────────── */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* ── Reset & Tokens ──────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f1117;
+  --surface:   #181c27;
+  --surface2:  #1e2334;
+  --border:    #2a2f42;
+  --accent:    #4f8ef7;
+  --accent2:   #7c6af7;
+  --text:      #e8eaf0;
+  --muted:     #7a7f96;
+  --danger:    #f75c5c;
+  --success:   #4fd18a;
+  --radius:    10px;
+  --font:      'DM Sans', sans-serif;
+  --mono:      'Space Mono', monospace;
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f0f2f5;
-    color: #333;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
+
+a { color: inherit; text-decoration: none; }
 
 /* ── Auth pages ──────────────────────────────── */
 .auth-container {
-    max-width: 400px;
-    margin: 100px auto;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    text-align: center;
+  max-width: 400px;
+  margin: 100px auto;
+  background: var(--surface);
+  padding: 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
-h1 {
-    margin-bottom: 24px;
-    color: #1a73e8;
+.auth-container h1 {
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  color: var(--accent);
+  margin-bottom: 8px;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.auth-container h2 {
+  font-weight: 300;
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-size: 1rem;
 }
 
-input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-button {
-    padding: 12px;
-    background: #1a73e8;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
+.auth-container input {
+  padding: 12px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-button:hover { background: #1558b0; }
+.auth-container input:focus { border-color: var(--accent); }
 
-a { color: #1a73e8; }
+.auth-container button {
+  padding: 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
 
-p { margin-top: 16px; color: #666; }
+.auth-container button:hover { opacity: 0.85; }
+
+.auth-container p { margin-top: 20px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+.auth-container a { color: var(--accent); }
 
 .error {
-    background: #fdecea;
-    color: #c62828;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.9rem;
+  background: rgba(247, 92, 92, 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(247, 92, 92, 0.3);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
 }
 
-/* ── Dashboard ───────────────────────────────── */
-.dashboard {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px;
+/* ── Shell layout ────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
 }
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    padding: 16px 24px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    margin-bottom: 24px;
+/* ── Sidebar ─────────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-/* ── Upload section ──────────────────────────── */
-.upload-section {
-    background: white;
-    padding: 24px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    margin-bottom: 24px;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
 }
 
-.upload-section h2 {
-    margin-bottom: 16px;
-    color: #444;
+.logo-icon {
+  font-size: 1.4rem;
+  color: var(--accent);
 }
 
-.upload-section form {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+.logo-text {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
 }
 
-/* ── Files section ───────────────────────────── */
-.files-section {
-    background: white;
-    padding: 24px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
-.files-section h2 {
-    margin-bottom: 16px;
-    color: #444;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  transition: all 0.15s;
 }
-/* ── Breadcrumb ──────────────────────────────── */
+
+.nav-item:hover, .nav-item.active {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.nav-divider {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  padding: 12px 12px 4px;
+}
+
+.nav-folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+
+.nav-folder-item:hover, .nav-folder-item.active {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.nav-folder-item a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.nav-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.nav-delete:hover { color: var(--danger); background: rgba(247,92,92,0.1); }
+
+.nav-empty {
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 4px 12px;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sidebar-user a {
+  margin-left: auto;
+  color: var(--danger);
+  font-size: 0.82rem;
+}
+
+/* ── Main ────────────────────────────────────── */
+.main {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Topbar ──────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .breadcrumb {
-    margin-bottom: 16px;
-    font-size: 0.95rem;
-    color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
 }
 
-.breadcrumb a { color: #1a73e8; text-decoration: none; }
+.breadcrumb a { color: var(--accent); }
+.crumb-sep { color: var(--muted); }
+.crumb-current { color: var(--text); font-weight: 500; }
 
-/* ── Folder creation ─────────────────────────── */
-.folder-section {
-    background: white;
-    padding: 16px 24px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    margin-bottom: 16px;
+.inline-form {
+  display: flex;
+  gap: 8px;
 }
 
-.folder-section form {
-    flex-direction: row;
-    gap: 12px;
+.inline-form input {
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  outline: none;
+  width: 180px;
+  transition: border-color 0.2s;
 }
 
-.folder-section input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+.inline-form input:focus { border-color: var(--accent); }
+
+.inline-form button {
+  padding: 8px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
 
-.folder-section button {
-    padding: 10px 16px;
-    background: #34a853;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+.inline-form button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Upload card ─────────────────────────────── */
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
 }
 
-.folder-section button:hover { background: #2d8f46; }
+.upload-card form {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.upload-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  flex: 1;
+  transition: border-color 0.2s;
+}
+
+.upload-zone:hover { border-color: var(--accent); }
+
+.upload-zone input[type='file'] { display: none; }
+
+.upload-icon {
+  font-size: 1.2rem;
+  color: var(--accent);
+  font-style: normal;
+}
+
+.upload-text { color: var(--muted); font-size: 0.9rem; }
+
+.upload-btn {
+  padding: 12px 22px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.upload-btn:hover { opacity: 0.85; }
+
+/* ── Section label ───────────────────────────── */
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 600;
+}
 
 /* ── Folders grid ────────────────────────────── */
 .folders-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
 }
 
-.folder-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    text-decoration: none;
-    color: #333;
-    gap: 8px;
-    transition: box-shadow 0.2s;
+.folder-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: border-color 0.2s;
 }
 
-.folder-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.folder-tile:hover { border-color: var(--accent2); }
 
-.folder-icon { font-size: 2.5rem; }
+.folder-tile a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.tile-icon { font-size: 2rem; }
+
+.tile-name {
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: center;
+  word-break: break-word;
+}
+
+.tile-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.tile-delete:hover { color: var(--danger); background: rgba(247,92,92,0.1); }
+
+/* ── Files table ─────────────────────────────── */
+.files-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.files-header, .files-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 80px 100px 1fr;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  font-size: 0.88rem;
+}
+
+.files-header {
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.files-row {
+  border-top: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.files-row:hover { background: var(--surface2); }
+
+.file-name a { color: var(--accent); font-weight: 500; }
+.file-name a:hover { text-decoration: underline; }
+
+.file-type {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-view, .btn-dl {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.btn-view {
+  background: rgba(79,142,247,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(79,142,247,0.25);
+}
+
+.btn-view:hover { background: rgba(79,142,247,0.22); }
+
+.btn-dl {
+  background: rgba(79,209,138,0.12);
+  color: var(--success);
+  border: 1px solid rgba(79,209,138,0.25);
+}
+
+.btn-dl:hover { background: rgba(79,209,138,0.22); }
+
+.btn-del {
+  padding: 4px 8px;
+  background: rgba(247,92,92,0.1);
+  color: var(--danger);
+  border: 1px solid rgba(247,92,92,0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-del:hover { background: rgba(247,92,92,0.22); }
+
+.move-form {
+  display: flex;
+  gap: 4px;
+}
+
+.move-form select {
+  padding: 4px 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.move-form button {
+  padding: 4px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.move-form button:hover { color: var(--accent2); border-color: var(--accent2); }
+
+/* ── Empty state ─────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  color: var(--muted);
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.empty-icon { font-size: 2.5rem; }
+/* ── Welcome page ────────────────────────────── */
+.welcome-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.welcome-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 52px 60px;
+}
+
+.welcome-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-logo .logo-icon {
+  font-size: 2.2rem;
+  color: var(--accent);
+}
+
+.welcome-logo .logo-text {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.welcome-sub {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.welcome-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-primary {
+  padding: 11px 28px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+
+.btn-secondary {
+  padding: 11px 28px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Upload preview ──────────────────────────── */
+.upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 10px;
+}
+
+.preview-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.preview-name {
+  font-size: 0.88rem;
+  color: var(--text);
+  word-break: break-word;
+}

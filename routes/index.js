@@ -225,5 +225,57 @@ router.post('/folder/create', requireLogin, async (req, res) => {
 
     res.redirect('/dashboard' + (redirectFolder ? `?folder=${redirectFolder}` : ''));
 });
+//****************************Move file to folder***************************** */
+router.post('/file/move/:id', requireLogin, async (req, res) => {
+    const { folderId } = req.body;
+    const redirectFolder = req.query.folder || '';
+
+    try {
+        const file = await UserFile.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.session.userId
+            }
+        });
+
+        if (!file) return res.status(404).send('File not found.');
+
+        // null moves file back to root
+        file.folderId = folderId === 'null' ? null : parseInt(folderId);
+        await file.save();
+
+    } catch (err) {
+        console.error(err);
+    }
+
+    res.redirect('/dashboard' + (redirectFolder ? `?folder=${redirectFolder}` : ''));
+});
+
+//****************************Delete folder*********************************** */
+router.post('/folder/delete/:id', requireLogin, async (req, res) => {
+    try {
+        const folder = await Folder.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.session.userId
+            }
+        });
+
+        if (!folder) return res.status(404).send('Folder not found.');
+
+        // move all files in folder back to root before deleting
+        await UserFile.update(
+            { folderId: null },
+            { where: { folderId: folder.id, userId: req.session.userId } }
+        );
+
+        await folder.destroy();
+        res.redirect('/dashboard');
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
+});
 
 module.exports = router;
