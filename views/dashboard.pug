@@ -11,9 +11,27 @@ block content
     .upload-section
       h2 Upload a File
       form(action='/upload', method='POST', enctype='multipart/form-data')
-        input(type='file', name='file', required)
+        input(type='file', name='file', id='fileInput', required)
+        label(for='fileInput') Choose a file
         button(type='submit') Upload
 
     .files-section
       h2 Your Files
-      p No files yet.
+      if files.length === 0
+        p No files uploaded yet.
+      else
+        table
+          thead
+            tr
+              th Name
+              th Type
+              th Size
+              th Uploaded
+          tbody
+            each file in files
+              tr
+                td
+                  a(href='/uploads/' + file.storedName, target='_blank')= file.originalName
+                td= file.mimetype
+                td= (file.size / 1024).toFixed(1) + ' KB'
+                td= new Date(file.createdAt).toLocaleDateString()

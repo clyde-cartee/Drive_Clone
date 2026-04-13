@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const UserFile = require('../models/userFile');
 
 //***************************Authentication************************************ */
 function requireLogin(req, res, next) {
@@ -22,9 +23,16 @@ router.get('/register',(req, res) => {
     res.render('register', { error: null });
 });
 
-router.get('/dashboard', requireLogin, (req, res) => {
-    res.render('dashboard', { username: req.session.username });
-    
+router.get('/dashboard', requireLogin, async (req, res) => {
+    const files = await UserFile.findAll({
+        where: { userId: req.session.userId },
+        order: [['createdAt', 'DESC']]
+    });
+
+    res.render('dashboard', {
+        username: req.session.username,
+        files
+    });
 });
 
 router.get('/logout', (req, res) => {
@@ -85,4 +93,24 @@ router.post('/login', async (req, res) => {
         res.render('login', { error: 'Something went wrong.' });
     }
 });
+//****************************Upload post*********************************** */
+router.post('/upload', requireLogin, (req, res) => {
+    const upload = req.app.locals.upload;
+
+    upload.single('file')(req, res, async (err) => {
+        if (err || !req.file) return res.redirect('/dashboard');
+
+        await UserFile.create({
+            userId:       req.session.userId,
+            originalName: req.file.originalname,
+            storedName:   req.file.filename,
+            mimetype:     req.file.mimetype,
+            size:         req.file.size
+        });
+
+        console.log('File uploaded:', req.file);
+        res.redirect('/dashboard');
+    });
+});
+
 module.exports = router;

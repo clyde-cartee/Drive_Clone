@@ -19,3 +19,12 @@ keep peoples files connected to only them. I wouldn't have thought about this pa
 functionality. It also helped with showing where I need to add this to help with verification. Though if I didn't have the ability to use these tools I would have figured it 
 out by reading documentation, this allowed me to fly through this part of the project. So far I have found that cross referencing googles gemini with claude.ai. 
 It has been important especially at points where I wanted multiple solutions or to learn more about a package or syntax. 
+
+## 4/12/2026 Pt. 2
+
+I took a slight break and when I came back I started working on each user being able to see their own individual files. I need to do more incremental git commits to save more of the
+progress I am making to my repository. The project is now showing the file names in the page after you upload and if you log out and back in. Overall this is working incredibly well.
+"vibe coding" has drastically increased the things I think I would have been able to accomplish at this point. Though, I have to be careful and make sure things line up for my post and 
+get requests, besides a few things it forgets or even that I forget, it has been incredibly smooth to develop. I wonder how much of this is because I had my file system set up, I use my code 
+to train how I want it to produce snipets, and how careful I am when asking the tool step by step ways to produce the code I want. With what my current goals were for this project, I am 
+already on day 7 out of 10 on my development goals. 
