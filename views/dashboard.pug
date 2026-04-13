@@ -27,11 +27,21 @@ block content
               th Type
               th Size
               th Uploaded
+              th View
+              th Download
+              th Delete
           tbody
             each file in files
               tr
                 td
-                  a(href='/uploads/' + file.storedName, target='_blank')= file.originalName
+                  a(href='/file/' + file.id, target='_blank')= file.originalName
                 td= file.mimetype
                 td= (file.size / 1024).toFixed(1) + ' KB'
                 td= new Date(file.createdAt).toLocaleDateString()
+                td
+                  a(href='/file/' + file.id, target='_blank') 👁 View
+                td
+                  a(href='/download/' + file.id) ⬇ Download
+                td
+                  form(action='/delete/' + file.id, method='POST', onsubmit='return confirm("Delete this file?")')
+                    button.delete-btn(type='submit') 🗑 Delete

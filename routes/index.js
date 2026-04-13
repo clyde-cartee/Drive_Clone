@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const path = require('path');
+const fs = require('fs');
 const User = require('../models/user');
 const UserFile = require('../models/userFile');
+
 
 //***************************Authentication************************************ */
 function requireLogin(req, res, next) {
@@ -111,6 +114,75 @@ router.post('/upload', requireLogin, (req, res) => {
         console.log('File uploaded:', req.file);
         res.redirect('/dashboard');
     });
+});
+
+//****************************File view*********************************** */
+router.get('/file/:id', requireLogin, async (req, res) => {
+    try {
+        const file = await UserFile.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.session.userId
+            }
+        });
+
+        if (!file) return res.status(404).send('File not found.');
+
+        const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+        res.setHeader('Content-Type', file.mimetype);
+        fs.createReadStream(filePath).pipe(res);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
+});
+
+//****************************Download*********************************** */
+router.get('/download/:id', requireLogin, async (req, res) => {
+    try {
+        const file = await UserFile.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.session.userId
+            }
+        });
+
+        if (!file) return res.status(404).send('File not found.');
+
+        const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+        res.download(filePath, file.originalName);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
+});
+
+//****************************Delete*********************************** */
+router.post('/delete/:id', requireLogin, async (req, res) => {
+    try {
+        const file = await UserFile.findOne({
+            where: {
+                id: req.params.id,
+                userId: req.session.userId
+            }
+        });
+
+        if (!file) return res.status(404).send('File not found.');
+
+        const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+        fs.unlink(filePath, (err) => {
+            if (err) console.error('Could not delete file from disk:', err);
+        });
+
+        await file.destroy();
+        res.redirect('/dashboard');
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
 });
 
 module.exports = router;
