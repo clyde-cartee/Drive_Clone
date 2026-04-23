@@ -3,7 +3,13 @@
 This is a google drive clone
 
 ## Start up
-Connect to hopper, run app, login to daytona is within the file, go to http://localhost:8000
+after cloning repository npm install in command line to download dependencies.
+
+Connect to hopper, 
+
+run app via node app.js
+
+login to daytona is within the file, go to http://localhost:8000.
 
 ## Registering/Log in
 When opening up the site (localhost:8000), first pick register. Add your username and password then you will be redirected to log in where you can use that 
