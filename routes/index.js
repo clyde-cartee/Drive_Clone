@@ -31,38 +31,89 @@ router.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/login'));
 });
 //****************************/DashboardGET()*********************************** */
+
+// build nested tree from flat array
+function buildTree(folders, parentId = null) {
+    return folders
+        .filter(f => f.parentId === parentId)
+        .map(f => ({
+            ...f.dataValues,
+            children: buildTree(folders, f.id)
+        }));
+}
+
 router.get('/dashboard', requireLogin, async (req, res) => {
     const folderId = req.query.folder ? parseInt(req.query.folder) : null;
 
     const folders = await Folder.findAll({
+        where: { 
+            userId: req.session.userId,
+            parentId: folderId
+         },
+        order: [['name', 'ASC']]
+    });
+
+    const allFolders = await Folder.findAll({
         where: { userId: req.session.userId },
         order: [['name', 'ASC']]
     });
 
-    const fileQuery = {
-        userId: req.session.userId,
-        folderId: folderId  // null shows root files, id shows folder files
-    };
-
     const files = await UserFile.findAll({
-        where: fileQuery,
+        where: {
+            userId: req.session.userId,
+            folderId: folderId
+        },
         order: [['createdAt', 'DESC']]
     });
 
-    // find current folder name if inside one
     const currentFolder = folderId
-        ? folders.find(f => f.id === folderId)
+        ? await Folder.findByPk(folderId)
         : null;
+    
+    const breadcrumb = await getBreadcrumb(folderId);
+        // build nested tree for sidebar
+    const folderTree = buildTree(allFolders);
 
     res.render('dashboard', {
         username: req.session.username,
         files,
-        folders,
+        folders,    
+        allFolders,
+        folderTree,    
         currentFolder,
-        folderId
+        folderId,
+        breadcrumb,
     });
 });
 
+// ─── GET /search ──────────────────────────────────────────────
+router.get('/search', requireLogin, async (req, res) => {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ folders: [], files: [] });
+
+    const { Op } = require('sequelize');
+
+    const folders = await Folder.findAll({
+        where: {
+            userId: req.session.userId,
+            name: { [Op.like]: `%${q}%` }
+        },
+        order: [['name', 'ASC']]
+    });
+
+    const files = await UserFile.findAll({
+        where: {
+            userId: req.session.userId,
+            originalName: { [Op.like]: `%${q}%` }
+        },
+        order: [['originalName', 'ASC']]
+    });
+
+    res.json({
+        folders: folders.map(f => ({ id: f.id, name: f.name, parentId: f.parentId })),
+        files:   files.map(f => ({ id: f.id, name: f.originalName, folderId: f.folderId }))
+    });
+});
 
 //****************************register post*********************************** */
 router.post('/register', async (req, res) => {
@@ -212,18 +263,19 @@ router.post('/delete/:id', requireLogin, async (req, res) => {
 //****************************POST /folder/create***************************** */
 router.post('/folder/create', requireLogin, async (req, res) => {
     const { name } = req.body;
-    const redirectFolder = req.query.folder || '';
+    const folderId = req.query.folder ? parseInt(req.query.folder) : null;
 
     try {
         await Folder.create({
             userId: req.session.userId,
-            name: name.trim()
+            name: name.trim(),
+            parentId: folderId  // nest inside current folder
         });
     } catch (err) {
         console.error(err);
     }
 
-    res.redirect('/dashboard' + (redirectFolder ? `?folder=${redirectFolder}` : ''));
+    res.redirect('/dashboard' + (folderId ? `?folder=${folderId}` : ''));
 });
 //****************************Move file to folder***************************** */
 router.post('/file/move/:id', requireLogin, async (req, res) => {
@@ -255,26 +307,129 @@ router.post('/file/move/:id', requireLogin, async (req, res) => {
 router.post('/folder/delete/:id', requireLogin, async (req, res) => {
     try {
         const folder = await Folder.findOne({
-            where: {
-                id: req.params.id,
-                userId: req.session.userId
-            }
+            where: { id: req.params.id, userId: req.session.userId }
         });
 
         if (!folder) return res.status(404).send('Folder not found.');
 
-        // move all files in folder back to root before deleting
-        await UserFile.update(
-            { folderId: null },
-            { where: { folderId: folder.id, userId: req.session.userId } }
-        );
+        // recursively delete all nested folders and move files to root
+        await deleteFolder(folder, req.session.userId);
 
-        await folder.destroy();
-        res.redirect('/dashboard');
+        res.redirect('/dashboard' + (folder.parentId ? `?folder=${folder.parentId}` : ''));
 
     } catch (err) {
         console.error(err);
         res.status(500).send('Something went wrong.');
+    }
+});
+// ─── POST /folder/move/:id ────────────────────────────────────
+router.post('/folder/move/:id', requireLogin, async (req, res) => {
+    let { folderId } = req.body;
+    folderId = folderId === 'null' ? null : parseInt(folderId);
+
+    try {
+        const folder = await Folder.findOne({
+            where: { id: req.params.id, userId: req.session.userId }
+        });
+
+        if (!folder) return res.status(404).send('Folder not found.');
+
+        // prevent moving folder into itself or its own children
+        if (folderId && await isDescendant(req.params.id, folderId, req.session.userId)) {
+            return res.redirect('/dashboard' + (req.query.folder ? `?folder=${req.query.folder}` : ''));
+        }
+
+        folder.parentId = folderId;
+        await folder.save();
+
+        res.redirect('/dashboard' + (folderId ? `?folder=${folderId}` : ''));
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
+});
+
+// prevent dropping a folder into its own descendant
+async function isDescendant(folderId, targetId, userId) {
+    let current = targetId;
+    while (current) {
+        if (String(current) === String(folderId)) return true;
+        const folder = await Folder.findOne({ where: { id: current, userId } });
+        if (!folder) break;
+        current = folder.parentId;
+    }
+    return false;
+}
+
+// ─── Helper: build breadcrumb trail ──────────────────────────
+async function getBreadcrumb(folderId) {
+    const trail = [];
+    let current = folderId;
+
+    while (current) {
+        const folder = await Folder.findByPk(current);
+        if (!folder) break;
+        trail.unshift(folder);
+        current = folder.parentId;
+    }
+
+    // remove last item — it's the current folder, rendered separately
+    trail.pop();
+
+    return trail;
+}
+// ─── Helper: recursively delete folder and children ──────────
+async function deleteFolder(folder, userId) {
+    // find all child folders
+    const children = await Folder.findAll({
+        where: { parentId: folder.id, userId }
+    });
+
+    // recursively delete each child
+    for (const child of children) {
+        await deleteFolder(child, userId);
+    }
+
+    // move files in this folder to root
+    await UserFile.update(
+        { folderId: null },
+        { where: { folderId: folder.id, userId } }
+    );
+
+    await folder.destroy();
+}
+// ─── POST /file/rename/:id ────────────────────────────────────
+router.post('/file/rename/:id', requireLogin, async (req, res) => {
+    const { name } = req.body;
+    try {
+        const file = await UserFile.findOne({
+            where: { id: req.params.id, userId: req.session.userId }
+        });
+        if (!file) return res.status(404).json({ error: 'Not found' });
+
+        file.originalName = name.trim();
+        await file.save();
+        res.json({ success: true, name: file.originalName });
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
+
+// ─── POST /folder/rename/:id ──────────────────────────────────
+router.post('/folder/rename/:id', requireLogin, async (req, res) => {
+    const { name } = req.body;
+    try {
+        const folder = await Folder.findOne({
+            where: { id: req.params.id, userId: req.session.userId }
+        });
+        if (!folder) return res.status(404).json({ error: 'Not found' });
+
+        folder.name = name.trim();
+        await folder.save();
+        res.json({ success: true, name: folder.name });
+    } catch (err) {
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 

@@ -227,6 +227,76 @@ a { color: inherit; text-decoration: none; }
   color: var(--danger);
   font-size: 0.82rem;
 }
+/* ── Sidebar folder tree ─────────────────────── */
+.nav-folder-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 8px 7px 4px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  transition: all 0.15s;
+}
+
+.nav-folder-row:hover,
+.nav-folder-row.active {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.nav-folder-row a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  color: inherit;
+}
+
+.nav-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: transform 0.2s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.nav-toggle:hover { color: var(--text); }
+
+.nav-toggle.open { transform: rotate(90deg); }
+
+.nav-toggle.hidden { visibility: hidden; pointer-events: none; }
+
+.nav-children {
+  display: none;
+  flex-direction: column;
+  padding-left: 16px;
+  border-left: 1px solid var(--border);
+  margin-left: 12px;
+  margin-top: 2px;
+}
+
+.nav-children.open { display: flex; }
+
+.nav-folder-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ── Main ────────────────────────────────────── */
 .main {
@@ -634,4 +704,409 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.88rem;
   color: var(--text);
   word-break: break-word;
+}
+/* ── Drag ghost ──────────────────────────────── */
+.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(4px);
+}
+
+/* ── Dragging source ─────────────────────────── */
+.dragging {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* ── Drop targets ready state ────────────────── */
+.drop-ready.nav-folder-row,
+.drop-ready.nav-item,
+.drop-ready.folder-tile {
+    outline: 1px dashed var(--border);
+    outline-offset: -2px;
+    transition: all 0.1s;
+}
+
+/* ── Drop hover ──────────────────────────────── */
+.drop-hover.nav-folder-row,
+.drop-hover.nav-item {
+    background: rgba(79, 142, 247, 0.2) !important;
+    color: var(--accent) !important;
+    outline: 2px dashed var(--accent) !important;
+    outline-offset: -2px;
+}
+
+.drop-hover.folder-tile {
+    border-color: var(--accent) !important;
+    background: rgba(79, 142, 247, 0.1) !important;
+    outline: 2px dashed var(--accent);
+    outline-offset: -2px;
+}
+
+.drop-hover.nav-item {
+    background: rgba(79, 209, 138, 0.15) !important;
+    color: var(--success) !important;
+    outline-color: var(--success) !important;
+}
+
+/* ── Cursor while over draggable rows ────────── */
+.files-row {
+    cursor: grab;
+}
+
+.files-row:active {
+    cursor: grabbing;
+}
+/* ── Sidebar ─────────────────────────────────── */
+.sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    overflow: hidden;
+}
+
+/* ── Sidebar nav scroll ──────────────────────── */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+/* ── Folder rows ─────────────────────────────── */
+.nav-folder-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 8px 7px 4px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    transition: all 0.15s;
+    min-width: 0;        /* critical — allows flex children to shrink */
+    width: 100%;
+}
+
+.nav-folder-row a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    color: inherit;
+    min-width: 0;        /* critical — allows text to truncate */
+    overflow: hidden;
+}
+
+/* ── Folder name truncation ──────────────────── */
+.nav-folder-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+}
+
+/* ── Nested children indentation ─────────────── */
+.nav-children {
+    display: none;
+    flex-direction: column;
+    padding-left: 12px;      /* reduced from 16px */
+    border-left: 1px solid var(--border);
+    margin-left: 10px;
+    margin-top: 2px;
+    overflow: hidden;        /* prevent children bleeding out */
+}
+
+.nav-children.open { display: flex; }
+
+/* ── Nav folder wrap ─────────────────────────── */
+.nav-folder-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* ── Shell grid — lock sidebar width ─────────── */
+.shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+    overflow: hidden;
+}
+/* ── Nested children — reduce indent per level ── */
+.nav-children {
+    display: none;
+    flex-direction: column;
+    padding-left: 8px;        /* smaller indent per level */
+    border-left: 1px solid var(--border);
+    margin-left: 8px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+
+.nav-children.open { display: flex; }
+
+/* ── Folder name tooltip ─────────────────────── */
+.nav-folder-row {
+    position: relative;
+}
+
+.nav-folder-tooltip {
+    display: none;
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+/* ── Topbar right group ──────────────────────── */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* ── Search ──────────────────────────────────── */
+.search-wrap {
+    position: relative;
+}
+
+#searchInput {
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.88rem;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s, width 0.2s;
+}
+
+#searchInput:focus {
+    border-color: var(--accent);
+    width: 280px;
+}
+
+.search-results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 1000;
+    max-height: 360px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.search-results.open { display: block; }
+
+.search-group-label {
+    padding: 8px 14px 4px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+    border-top: 1px solid var(--border);
+}
+
+.search-group-label:first-child { border-top: none; }
+
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 0.88rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.1s;
+    text-decoration: none;
+}
+
+.search-item:hover { background: var(--surface2); }
+
+.search-item span { color: var(--muted); font-size: 0.8rem; }
+
+.search-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+/* ── Search highlight ────────────────────────── */
+mark {
+    background: rgba(79, 142, 247, 0.3);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+/* ── Context menu ────────────────────────────── */
+.ctx-menu {
+    position: fixed;
+    z-index: 9999;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    min-width: 140px;
+}
+
+.ctx-item {
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.ctx-item:hover { background: var(--surface); }
+
+/* ── Rename modal ────────────────────────────── */
+.rename-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.rename-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 320px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+
+.rename-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.rename-input {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.rename-input:focus { border-color: var(--accent); }
+
+.rename-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.rename-cancel {
+    padding: 8px 18px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.rename-cancel:hover { border-color: var(--text); color: var(--text); }
+
+.rename-confirm {
+    padding: 8px 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: var(--font);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.rename-confirm:hover { opacity: 0.85; }
+
+/* ── Search highlight fix — no space ─────────── */
+mark {
+    background: rgba(79, 142, 247, 0.3);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0;
+    margin: 0;
+}
+/*search bar item pop up */
+.search-item { gap: 4px; }
+.search-item-name { flex: 1; }
+.search-tag {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-left: auto;
+    padding-left: 8px;
+    flex-shrink: 0;
 }

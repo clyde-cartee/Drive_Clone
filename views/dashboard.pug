@@ -1,8 +1,23 @@
 extends layout
 
 block content
+  mixin folderTree(nodes)
+    each folder in nodes
+      - const hasChildren = folder.children && folder.children.length > 0
+      - const isActive = currentFolder && currentFolder.id === folder.id
+      .nav-folder-wrap
+        .nav-folder-row(class=isActive ? 'active' : '', data-id=folder.id)
+          button.nav-toggle(type='button', class=hasChildren ? '' : 'hidden', data-target='folder-' + folder.id) ›
+          a(href='/dashboard?folder=' + folder.id)
+            span.nav-icon 📁
+            span.nav-folder-name(title=folder.name)= folder.name
+          .nav-folder-tooltip= folder.name
+        if hasChildren
+          .nav-children(id='folder-' + folder.id)
+            +folderTree(folder.children)
+            
+
   .shell
-    //- Sidebar
     aside.sidebar
       .logo
         span.logo-icon ⬡
@@ -12,14 +27,8 @@ block content
           span.nav-icon 🏠
           span Home
         .nav-divider My Folders
-        if folders.length > 0
-          each folder in folders
-            .nav-folder-item(class=currentFolder && currentFolder.id === folder.id ? 'active' : '')
-              a(href='/dashboard?folder=' + folder.id)
-                span.nav-icon 📁
-                span= folder.name
-              form(action='/folder/delete/' + folder.id, method='POST', onsubmit='return confirm("Delete folder?")')
-                button.nav-delete(type='submit', title='Delete folder') ×
+        if folderTree.length > 0
+          +folderTree(folderTree)
         else
           p.nav-empty No folders yet
       .sidebar-user
@@ -27,22 +36,28 @@ block content
         span= username
         a(href='/logout') Log out
 
-    //- Main content
     main.main
-      //- Topbar
       .topbar
         .breadcrumb
           a(href='/dashboard') Home
+          each crumb in breadcrumb
+            span.crumb-sep ›
+            a(href='/dashboard?folder=' + crumb.id)= crumb.name
           if currentFolder
             span.crumb-sep ›
             span.crumb-current= currentFolder.name
 
-        //- New folder form
-        form.inline-form(action='/folder/create' + (folderId ? '?folder=' + folderId : ''), method='POST')
-          input(type='text', name='name', placeholder='New folder…')
-          button(type='submit') + Folder
+        .topbar-right
+          //- Search
+          .search-wrap
+            input#searchInput(type='text', placeholder='Search files and folders…', autocomplete='off')
+            .search-results#searchResults
 
-      //- Upload
+          //- New folder
+          form.inline-form(action='/folder/create' + (folderId ? '?folder=' + folderId : ''), method='POST')
+            input(type='text', name='name', placeholder='New folder…')
+            button(type='submit') + Folder
+
       .upload-card
         form(action='/upload' + (folderId ? '?folder=' + folderId : ''), method='POST', enctype='multipart/form-data')
           label.upload-zone(for='fileInput')
@@ -54,20 +69,18 @@ block content
             span.preview-name
           button.upload-btn(type='submit') Upload
 
-      //- Folder grid (root only)
-      if !currentFolder && folders.length > 0
+      if folders.length > 0
         .section-label Folders
         .folders-grid
           each folder in folders
-            .folder-tile
+            .folder-tile(data-id=folder.id, data-name=folder.name)
               a(href='/dashboard?folder=' + folder.id)
                 span.tile-icon 📁
                 span.tile-name= folder.name
               form(action='/folder/delete/' + folder.id, method='POST', onsubmit='return confirm("Delete folder?")')
                 button.tile-delete(type='submit') ×
 
-      //- Files
-      .section-label= currentFolder ? currentFolder.name : 'All Files'
+      .section-label= currentFolder ? currentFolder.name + ' Files' : 'All Files'
       if files.length === 0
         .empty-state
           span.empty-icon 📭
@@ -81,7 +94,7 @@ block content
             span Date
             span Actions
           each file in files
-            .files-row
+            .files-row(data-id=file.id, data-name=file.originalName)
               span.file-name
                 a(href='/file/' + file.id, target='_blank')= file.originalName
               span.file-type= file.mimetype.split('/')[1]
@@ -93,8 +106,8 @@ block content
                 form.move-form(action='/file/move/' + file.id + (folderId ? '?folder=' + folderId : ''), method='POST')
                   select(name='folderId')
                     option(value='null') — Root —
-                    each folder in folders
-                      option(value=folder.id, selected=file.folderId === folder.id)= folder.name
+                    each f in allFolders
+                      option(value=f.id, selected=file.folderId === f.id)= f.name
                   button(type='submit') Move
                 form(action='/delete/' + file.id, method='POST', onsubmit='return confirm("Delete?")')
                   button.btn-del(type='submit') ✕

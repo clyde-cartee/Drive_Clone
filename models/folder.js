@@ -14,6 +14,11 @@ const Folder = sequelize.define('Folder', {
     name: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    parentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,    // null = root level folder
+        defaultValue: null
     }
 }, {
     tableName: 'folders',
