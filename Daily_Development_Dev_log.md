@@ -44,3 +44,8 @@ Overall, How quickly this entire thing came together is incredible. The use of "
 success with this strategy is again me having how I wanted my file system to be set up, telling the ai exactly what tools I wanted to use, and not asking it to do everything all at once. I knew what
 it was doing at all times and it was easy to double check as I made it only do small chunks of work. Very fun. As you can see I spent my entire sunday working on this project off and on because I was
 so excited. The time literally flew by. 
+
+## 4/22/2026 
+I added a lot of small features like file nesting, sharing files link or directly if you know username, renaming folders, file search bar, updating sidebar, drag and drop, using right click to access rename and
+share. overall very fun. I nearly ran into issues by being overly hasty with code. lesson learned. Overall, I am not done with this project and there are a lot of small things I want to refine for the future. Especially
+leading to a permanantly hosted and secure version of this site. 
