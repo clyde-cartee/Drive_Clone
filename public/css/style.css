@@ -1110,3 +1110,180 @@ mark {
     padding-left: 8px;
     flex-shrink: 0;
 }
+/* ── Share modal ─────────────────────────────── */
+.share-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.share-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 360px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+
+.share-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.share-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.share-tab {
+    flex: 1;
+    padding: 7px;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: var(--font);
+}
+
+.share-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.share-panel { display: none; flex-direction: column; gap: 10px; }
+.share-panel.active { display: flex; }
+
+.share-input {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.share-input:focus { border-color: var(--accent); }
+
+.share-link-box {
+    display: flex;
+    gap: 8px;
+}
+
+.share-link-box input {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--mono);
+    outline: none;
+}
+
+.btn-copy {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+.btn-copy.copied { border-color: var(--success); color: var(--success); }
+
+.share-send {
+    padding: 10px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.share-send:hover { opacity: 0.85; }
+
+.share-error { color: var(--danger); font-size: 0.85rem; }
+.share-success { color: var(--success); font-size: 0.85rem; }
+
+.share-close {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+/* ── Share file info ─────────────────────────── */
+.share-file-info {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin: 8px 0;
+}
+
+.share-filename {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.share-meta { color: var(--muted); font-size: 0.85rem; }
+
+.share-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+.shared-badge {
+    font-size: 0.72rem;
+    color: var(--accent2);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.btn-update {
+    padding: 4px 10px;
+    background: rgba(124, 106, 247, 0.12);
+    color: var(--accent2);
+    border: 1px solid rgba(124, 106, 247, 0.25);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-update:hover { background: rgba(124, 106, 247, 0.22); }

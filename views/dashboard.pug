@@ -97,6 +97,8 @@ block content
             .files-row(data-id=file.id, data-name=file.originalName)
               span.file-name
                 a(href='/file/' + file.id, target='_blank')= file.originalName
+                if file.sharedFromId
+                  span.shared-badge 🔗 shared
               span.file-type= file.mimetype.split('/')[1]
               span= (file.size / 1024).toFixed(1) + ' KB'
               span= new Date(file.createdAt).toLocaleDateString()
@@ -110,4 +112,4 @@ block content
                       option(value=f.id, selected=file.folderId === f.id)= f.name
                   button(type='submit') Move
                 form(action='/delete/' + file.id, method='POST', onsubmit='return confirm("Delete?")')
-                  button.btn-del(type='submit') ✕
+                  button.btn-del(type='submit') ✕       

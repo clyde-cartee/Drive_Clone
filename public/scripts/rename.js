@@ -2,7 +2,10 @@
 const menu = document.createElement('div');
 menu.className = 'ctx-menu';
 menu.style.display = 'none';
-menu.innerHTML = `<div class="ctx-item" id="ctxRename">✏️ Rename</div>`;
+menu.innerHTML = `
+  <div class="ctx-item" id="ctxRename">✏️ Rename</div>
+  <div class="ctx-item" id="ctxShare">🔗 Share</div>
+`;
 document.body.appendChild(menu);
 
 let ctxTarget = null; // { type: 'file'|'folder', id, name, el }
@@ -61,6 +64,12 @@ document.getElementById('ctxRename').addEventListener('click', () => {
     menu.style.display = 'none';
     if (!ctxTarget) return;
     openRenameModal(ctxTarget);
+});
+// ── share ─────────────────────────────────────────────
+document.getElementById('ctxShare').addEventListener('click', () => {
+    menu.style.display = 'none';
+    if (!ctxTarget || ctxTarget.type !== 'file') return;
+    openShareModal(ctxTarget.id);
 });
 
 // ── Rename modal ──────────────────────────────────────────────

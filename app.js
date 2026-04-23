@@ -10,6 +10,7 @@ const sequelize = require('./utils/sequelize');
 const User = require('./models/user');
 const UserFile = require('./models/userFile');
 const Folder = require('./models/folder');
+const FileShare = require('./models/fileShare');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,7 +20,10 @@ app.use(session({
     secret: 'drive-clone-secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    }
 }));
 
 const storage = multer.diskStorage({
@@ -35,15 +39,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.locals.upload = upload;
 
-app.set('views', path.join(__dirname, "views"));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use('/', indexRouter );
+app.use('/', indexRouter);
 
 sequelize.authenticate()
     .then(() => {
-        console.log("Successfully authenticated.");
-        return sequelize.sync();            
+        console.log('Successfully authenticated.');
+        return sequelize.sync();
     })
     .then(() => {
         app.listen(port, () => {
@@ -51,5 +55,5 @@ sequelize.authenticate()
         });
     })
     .catch((err) => {
-        console.log("Could not authenticate: ", err);
+        console.log('Could not authenticate:', err);
     });

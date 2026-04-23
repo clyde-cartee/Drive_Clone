@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  .auth-container
+    h1 DriveClone
+    h2 Shared File
+    p
+      strong= owner.username
+      |  shared this file with you:
+    .share-file-info
+      p.share-filename 📄 #{file.originalName}
+      p.share-meta #{(file.size / 1024).toFixed(1)} KB
+    .share-actions
+      a.btn-primary(href='/share/' + token + '/view', target='_blank') 👁 View
+      a.btn-secondary(href='/share/' + token + '/download') ⬇ Download

@@ -6,6 +6,8 @@ const fs = require('fs');
 const User = require('../models/user');
 const UserFile = require('../models/userFile');
 const Folder = require('../models/folder');
+const FileShare = require('../models/fileShare');
+const { Op } = require('sequelize');
 
 
 //***************************Authentication************************************ */
@@ -91,8 +93,6 @@ router.get('/search', requireLogin, async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.json({ folders: [], files: [] });
 
-    const { Op } = require('sequelize');
-
     const folders = await Folder.findAll({
         where: {
             userId: req.session.userId,
@@ -113,6 +113,105 @@ router.get('/search', requireLogin, async (req, res) => {
         folders: folders.map(f => ({ id: f.id, name: f.name, parentId: f.parentId })),
         files:   files.map(f => ({ id: f.id, name: f.originalName, folderId: f.folderId }))
     });
+});
+// ─── GET /share/:token ────────────────────────────────────────
+router.get('/share/:token', async (req, res) => {
+    try {
+        const share = await FileShare.findOne({
+            where: { token: req.params.token }
+        });
+
+        if (!share) return res.status(404).send('Share link not found.');
+
+        if (share.expiresAt && new Date() > share.expiresAt) {
+            return res.status(410).send('This share link has expired.');
+        }
+
+        const file = await UserFile.findByPk(share.fileId);
+        if (!file) return res.status(404).send('File no longer exists.');
+
+        const owner = await User.findByPk(share.ownerId);
+
+        res.render('share-view', { file, owner, token: req.params.token });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Something went wrong.');
+    }
+});
+
+// ─── GET /share/:token/download ───────────────────────────────
+router.get('/share/:token/download', async (req, res) => {
+    const share = await FileShare.findOne({ where: { token: req.params.token } });
+    if (!share) return res.status(404).send('Not found.');
+
+    const file = await UserFile.findByPk(share.fileId);
+    if (!file) return res.status(404).send('File not found.');
+
+    const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+    res.download(filePath, file.originalName);
+});
+
+// ─── GET /share/:token/view ───────────────────────────────────
+router.get('/share/:token/view', async (req, res) => {
+    const share = await FileShare.findOne({ where: { token: req.params.token } });
+    if (!share) return res.status(404).send('Not found.');
+
+    const file = await UserFile.findByPk(share.fileId);
+    if (!file) return res.status(404).send('File not found.');
+
+    const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+    res.setHeader('Content-Type', file.mimetype);
+    fs.createReadStream(filePath).pipe(res);
+});
+// ─── POST /file/share/:id ─────────────────────────────────────
+router.post('/file/share/:id', requireLogin, async (req, res) => {
+    const { username } = req.body;
+    const fileId = req.params.id;
+
+    try {
+        const file = await UserFile.findOne({
+            where: { id: fileId, userId: req.session.userId }
+        });
+        if (!file) return res.status(404).json({ error: 'File not found' });
+
+        // check if sharing to specific user
+        if (username) {
+            const targetUser = await User.findOne({ where: { username } });
+            if (!targetUser) return res.json({ error: 'User not found.' });
+            if (targetUser.id === req.session.userId) return res.json({ error: 'Cannot share with yourself.' });
+
+            // duplicate file into their account
+            await UserFile.create({
+                userId:       targetUser.id,
+                folderId:     null,
+                originalName: file.originalName,
+                storedName:   file.storedName,
+                mimetype:     file.mimetype,
+                size:         file.size
+            });
+
+            return res.json({ success: true, message: `File shared with ${username}.` })
+        }
+
+        // otherwise generate a public link
+        const token = require('crypto').randomBytes(32).toString('hex');
+        await FileShare.create({
+            fileId,
+            ownerId: req.session.userId,
+            sharedWithUserId: null,
+            token,
+            shareType: 'link',
+            expiresAt: null
+        });
+
+        const shareUrl = `${req.protocol}://${req.get('host')}/share/${token}`;
+        res.json({ success: true, shareUrl });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
 });
 
 //****************************register post*********************************** */
@@ -158,11 +257,15 @@ router.post('/login', async (req, res) => {
             return res.render('login', { error: 'Invalid username or password.' });
         }
 
-        req.session.userId = user.id;
+        req.session.userId   = user.id;
         req.session.username = user.username;
 
+        if (req.session.pendingShare) {
+            const token = req.session.pendingShare;
+            delete req.session.pendingShare;
+            return res.redirect('/share/' + token);
+        }
 
-        // 3. success → redirect to dashboard
         res.redirect('/dashboard');
 
     } catch (err) {
@@ -238,18 +341,25 @@ router.get('/download/:id', requireLogin, async (req, res) => {
 router.post('/delete/:id', requireLogin, async (req, res) => {
     try {
         const file = await UserFile.findOne({
-            where: {
-                id: req.params.id,
-                userId: req.session.userId
-            }
+            where: { id: req.params.id, userId: req.session.userId }
         });
 
         if (!file) return res.status(404).send('File not found.');
 
-        const filePath = path.join(__dirname, '../public/uploads', file.storedName);
-        fs.unlink(filePath, (err) => {
-            if (err) console.error('Could not delete file from disk:', err);
+        // only delete physical file if no other users reference it
+        const sharedCount = await UserFile.count({
+            where: {
+                storedName: file.storedName,
+                id: { [Op.ne]: file.id }
+            }
         });
+
+        if (sharedCount === 0) {
+            const filePath = path.join(__dirname, '../public/uploads', file.storedName);
+            fs.unlink(filePath, (err) => {
+                if (err) console.error('Could not delete file from disk:', err);
+            });
+        }
 
         await file.destroy();
         res.redirect('/dashboard');

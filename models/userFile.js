@@ -31,6 +31,11 @@ const UserFile = sequelize.define('UserFile', {
     size: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    sharedFromId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null  // null = original, points to original file id if shared
     }
 }, {
     tableName: 'user_files',
